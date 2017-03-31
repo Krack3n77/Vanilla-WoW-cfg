@@ -2,8 +2,8 @@
 
 ## Usage [Windows]:
 
-1. Download a zip of the repository zip.
-2. Exctract the zip file.
+1. Download a ZIP of the repository (**Clone or Download** button, Download ZIP)
+2. Extract the ZIP file.
 3. Copy the *Elysium-WoW-cfg.cmd* from the Windows directory in the extracted zip to you Vanilla World of Warcraft directory.
 4. Double click *Elysium-WoW-cfg.cmd* to run.
 
