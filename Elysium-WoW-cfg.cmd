@@ -352,7 +352,9 @@ rem ----------------------------------------------------------------------------
     echo.
     echo.       Be sure to run this script from inside your World of Warcraft directory.
     echo.       (Where you extracted the game files to. It contains WoW.exe, Interface, 
-	echo.       Data, etc.)
+    echo.       Data, etc.)
     echo.
+    echo.        Press any key to close window...
+    pause >NUL
     exit /b
 
