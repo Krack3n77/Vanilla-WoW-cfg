@@ -11,24 +11,51 @@ rem
 mode con: cols=100 lines=60
 set wowEXE_md5=ccf83146dbb3d10ef826aa4de178a5be
 
+rem BS = backspace character. Lets us pretty up prompts with leading spaces
+for /f %%A in ('"prompt $H &echo on &for %%B in (1) do rem"') do set BS=%%A
+
 if not exist .\WoW.exe goto :noWoW
 set wowDir=%CD%
 
+cls
+echo.
+echo.
+echo.                    Elysium Project Configurator
+echo.                    ----------------------------
+echo.
+echo.           This script will run through (re-^)configuring your
+echo.           Elysium Project WoW install. The following are done:
+echo.
+echo.              1. Validate your WoW.exe is the right version
+echo.              2. Write a new realmlist.wtf
+echo.              3. Update WTF\config.wtf
+echo.              4. Clears any existing cache files
+echo.              5. Turn off compatibility mode (causes disconnects^)
+echo.              6. Removes unnecessary EXE files (Optional^)
+echo.              7. Creates a shortcut to the game on your desktop (Optional^)
+echo.
+echo.        
+echo.          Press any key to get started...
+pause >NUL
 :realmMenu
 cls
 echo.
 echo.
-echo.           Elysium Project Configurator
-echo.           ----------------------------        
+echo.                    Elysium Project Configurator
+echo.                    ----------------------------        
 echo.
-echo Select the Realm you want to play on:
+echo.           Select the Realm you want to play on. If you haven't 
+echo.           created a character yet, any realm will do. You can 
+echo.           switch once logged in.
 echo.
-echo.           1. Anathema (PvP^)
-echo.           2. Darrowshire (PvE^)
-echo.           3. Elysium (PvP^)
-echo.           4. Zeth'Kur (PvP^)
+echo.                      1. Anathema (PvP^)
+echo.                      2. Darrowshire (PvE^)
+echo.                      3. Elysium (PvP^)
+echo.                      4. Zeth'Kur (PvP^)
 echo.
-set /p realm="Enter realm number (1-4): "
+echo.
+echo.
+set /p realm=".%BS%          Enter realm number (1-4): "
 if not "%realm%" == "1" if not "%realm%" == "2" if not "%realm%" == "3" if not "%realm%" == "4" goto realmMenu
 
 if "%realm%" == "1" (
@@ -55,86 +82,147 @@ echo.
 rem 
 rem Check if WoW.exe is valid
 rem
+echo.
+echo.  --------- STEP 1 - Validate your WoW.exe is the right version ---------
+echo.
 call :GETMD5 .\WoW.exe
-echo WoW.exe checksum - %md5%
-echo Correct checksum - %wowEXE_md5%
+echo.       WoW.exe checksum - %md5%
+echo.       Correct checksum - %wowEXE_md5%
 echo.
 if not "%md5%" == "%wowEXE_md5%" goto :badWoWMD5 
-
+echo.       We have a match, so WoW executable checks out. Starting config:
 rem 
 rem MD5 sum for the WoW executable matches 1.12.1, assume it's valid
 rem
-echo We have a match, so WoW executable checks out. Starting config:
+echo.
+echo.  --------- STEP 2 - Writing realmlist.wtf ------------------------------
+echo.
 echo. 
-echo.  step 1. Adding 'set realmlist logon.elysium-project.org' to realmlist.wtf
+echo.       Adding 'set realmlist logon.elysium-project.org' to realmlist.wtf
 echo # Elysium Project classic WoW server> realmlist.wtf
 echo set realmlist logon.elysium-project.org >> realmlist.wtf
-echo.  step 2. Checking for WTF folder...
+echo.
+echo.  --------- STEP 3 - Writing config.wtf ---------------------------------
+echo.
+echo|set /p=".%BS%       Checking for WTF folder... "
 if exist ".\WTF" (
     rem move into the WTF directory to process files
-    echo.            ...found.
+    echo found.
 ) else (
     rem no WTF directory found, so create one
-    echo.            ...not found; creating one.
+    echo not found; creating one.
     mkdir WTF
 )
 cd WTF
-echo.  step 3. Checking for existing config.wtf file...
+echo|set /p=".%BS%       Checking for existing config.wtf file... "
 if exist "config.wtf" (
     rem we have an existing config.wtf. Back it up, and remove old 
     rem realmlist and realmname lines
-    echo.             ... found.
-    echo.          a. Backing up config.wtf to config.wtf.wowcheck.
+    echo found.
+    echo.       - Backing up config.wtf to config.wtf.wowcheck.
     copy config.wtf config.wtf.wowcheck >NUL
-    echo.          b. Removing existing realmList and realmName entries from config.wtf
+    echo.       - Removing existing realmList and realmName entries from config.wtf
     type config.wtf.wowcheck | findstr /v /i realmlist | findstr /v /i realmname >config.wtf
 ) else (
-    echo.             ... not found. We'll create an empty one from scratch.
+    echo not found. We'll create an empty one from scratch.
 )
-echo.  step 4. Adding 'SET realmList "logon.elysium-project.org"' to config.wtf
+echo. 
+echo.       Adding 'SET realmList "logon.elysium-project.org"' to config.wtf
 echo SET realmList "logon.elysium-project.org" >> config.wtf
-
-echo.  step 5. Adding 'SET realmName "%realmNAme%"' to config.wtf
+echo.       Adding 'SET realmName "%realmName%"' to config.wtf
 echo SET realmName "%realmName%" >> config.wtf
-
+echo.
+echo.  --------- STEP 4 - clear existing WDB cache ---------------------------
+echo.
 cd "%wowDir%"
 if exist .\WDB (
-    echo.  step 6. Clearing old cache (WDB folder^).
+    echo.       Clearing old cache (WDB folder^).
     del /q .\WDB\*.* >NUL 
+	echo.       - done.
 )
+echo.
+echo.  --------- STEP 5 - turn off compatability mode ------------------------
+echo.
+echo.       Compatability mode is not necessary for World of Warcraft, and
+echo.       has been found to cause disconnect problems shortly after logging
+echo.       in for some users.
+echo.
+echo.       We'll disable it just to be sure.
+echo.
+echo.       Deleting registry key:
+echo.
+echo.           "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"
+echo.                         -^>"%wowDir%\WoW.exe"
+cd "%wowDir%"
+reg.exe DELETE "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v "%wowDir%\WoW.exe"
+)
+echo.
 
 echo.
+echo.  --------- STEP 6 - Remove unnecessary EXE files -----------------------
+echo.
+echo.
+echo.       The WoW application comes with some executables that are not 
+echo.       applicable when playing Vanilla WoW. These are:
+echo.
+echo.         - Launcher.exe - Launch wrapper for WoW that triggered 
+echo.                          updates and displayed news
+echo.         - BackgroundDownloader.exe - downloaded patches
+echo.         - Repair.exe - repaired WoW installs, only works with retail
+echo.
+echo.       We can safely delete these without affecting the game. Doing
+echo.       so prevents accidentally trying to update your install
+echo.       (something we don't want for Vanilla/Classic gaming).
 echo.
 set YN=
-set /p YN="Do you want to disable unnecessary executable files? (Y/N) "
+set /p YN="        Do you want to delete the unnecessary executable files? (Y/N) "
 if /i "%YN%" == "Y" (
     cd "%wowDir%"
     echo.
-    echo Disablng Repair.exe - rename to Repair.exe.disabled.
-    move Repair.exe Repair.exe.disabled 1>NUL 2>&1
-    echo Disablng Launcher.exe - rename to Launcher.exe.disabled.
-    move Launcher.exe Launcher.exe.disabled 1>NUL 2>&1
-    echo Disablng BackgroundDownloader.exe - rename to BackgroundDownloader.exe.disabled.
-    move BackgroundDownloader.exe BackgroundDownloader.exe.disabled 1>NUL 2>&1
+    echo        Deleting Launcher.exe
+    del Launcher.exe 1>NUL 2>&1
+    echo        Deleting BackgroundDownloader.exe
+    del BackgroundDownloader.exe 1>NUL 2>&1
+    echo        Deleting Repair.exe
+    del Repair.exe 1>NUL 2>&1
 )
 echo.
+echo.
+echo.  --------- STEP 7 - Create shortcut on desktop -------------------------
+echo.
+
+echo.
 set YN=
-set /p YN="Do you want a shortcut to Elysium Project WoW on your desktop? (Y/N) "
+set /p YN="       Do you want a shortcut to Elysium Project WoW on your desktop? (Y/N) "
 if /i "%YN%" == "Y" (
     call :createShortcut
 )
 echo.
-echo Configuration complete.
+echo.       Configuration complete.
 echo.
+echo.
+echo.  --------- STEP 8 - Check MD5 hashes of data files ---------------------
+echo.
+echo.       If the game is booting you out regularly, it can be caused by
+echo.       anti-cheat mechanisms detecting something wrong with your data 
+echo.       files. This routine will check the MD5 hashes of the game data
+echo.       files against known good versions to validate that your install
+echo.       should work. 
+echo.
+echo.       Any incorrect hashes will be highlighted for you. If there are any
+echo.       download the game again from the links on the Elysium Project 
+echo.       homepage.
+echo.
+
 set YN=
-set /p YN="Do you want to check MD5 hashes of the Warcraft data files? (Y/N) "
+set /p YN=".%BS%       Do you want to check MD5 hashes of the Warcraft data files? (Y/N) "
 if /i "%YN%" == "Y" (
     echo.
     call :checkFiles
 )
 
 echo.
-echo We're done. Press any key to close window.
+echo.       We're done. Press any key to close window.
 pause >NUL
 
 exit /b
@@ -149,12 +237,17 @@ rem ----------------------------------------------------------------------------
     rem Mismatch of the MD5 sum for WoW.exe
     rem
     echo.
-    echo This doesn't look like the correct WoW.exe. 
+    echo.        This doesn't look like the correct WoW.exe. 
     echo.
-    echo Check that the script is running in the correct directory. 
-    echo If you think it is, re-download the client from the Elysium
-    echo Project at https://elysium-project.org/play
+    echo.        Check that the script is running in the correct directory. 
+    echo.        If you think it is, re-download the client from the Elysium
+    echo.        Project at:
+	echo.   
+	echo.              https://elysium-project.org/play
     echo.
+	echo.
+	echo.        Press any key to close window.
+	pause >NUL
     exit /b
 
 :getMD5 %1
@@ -162,7 +255,7 @@ rem ----------------------------------------------------------------------------
     rem Calculate the MD5sum of a the file stored in the %1 variable.
     rem Returns the MD5sum in %md5%
     rem
-    echo Calculating MD5 sum on : %1
+    echo.       Calculating MD5 sum on : %1
     setlocal enabledelayedexpansion
     set /a count=1 
     for /f "skip=1 delims=:" %%a in ('CertUtil -hashfile "%1" MD5') do (
@@ -235,12 +328,12 @@ rem ----------------------------------------------------------------------------
         set file=!files[%%x]!
         set hash=!hashes[%%x]!
         call :getMD5 !file! 
-        echo|set /p="Installed MD5: !md5!"
+        echo|set /p=".%BS%       Installed MD5: !md5!"
         if "!md5!" == "!hash!" (
              echo. --- CORRECT 
         ) else ( 
              echo. --- RUH ROH! hashes don't MATCH
-             echo Correct MD5:   !hash!
+             echo.       Correct MD5:   !hash!
         )
         echo.
     )
@@ -251,11 +344,13 @@ rem ----------------------------------------------------------------------------
     rem
     rem Tells user to go find WoW
     rem
+    cls
     echo.
-    echo No WoW.exe found!
+    echo.       No WoW.exe found!
     echo.
-    echo Be sure to run this script from inside your 
-    echo World of Warcraft directory.
+    echo.       Be sure to run this script from inside your World of Warcraft directory.
+    echo.       (Where you extracted the game files to. It contains WoW.exe, Interface, 
+	echo.       Data, etc.)
     echo.
     exit /b
 
