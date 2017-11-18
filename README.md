@@ -17,7 +17,7 @@ The script does the following:
 * Checks the MD5 hashes of game data files (Optional)
 
 ## How do I use it?
-1. Download the ZIP file from the repository Releases page (link at top of post).
+1. Download the ZIP file from the repository [Releases](https://github.com/fulzamoth/Vanilla-WoW-cfg/releases) page.
 2. Extract the ZIP file.
 3. Copy the extracted *Vanilla-WoW-cfg.cmd* file to your Vanilla World of Warcraft directory.
 4. In your World of Warcraft directory, double click *Vanilla-WoW-cfg.cmd* to run the script.
