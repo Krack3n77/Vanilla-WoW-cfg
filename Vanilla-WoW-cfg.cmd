@@ -1,11 +1,14 @@
 @echo off
 rem 
-rem elysium-wow-cfg.cmd
+rem vanilla-wow-cfg.cmd
 rem
-rem v1.1.0
+rem v1.2.0
 rem
-rem     Configure World of Warcraft Vanilla for use on The Elysium Project
-rem                     --- & optionally validate files with MD5 sums ---
+rem     Configure World of Warcraft Vanilla for use on:
+rem     - The Elysium Project
+rem     - Light's Hope
+rem
+rem     & optionally validate files with MD5 sums
 rem
 rem     by: Fulzamoth
 rem
@@ -18,15 +21,13 @@ for /f %%A in ('"prompt $H &echo on &for %%B in (1) do rem"') do set BS=%%A
 
 if not exist .\WoW.exe goto :noWoW
 set wowDir=%CD%
-
+:mainScreen
 cls
 echo.
 echo.
-echo.                    Elysium Project Configurator
-echo.                    ----------------------------
 echo.
 echo.           This script will run through (re-^)configuring your
-echo.           Elysium Project WoW install. The following are done:
+echo.           Vanilla WoW install. The following are done:
 echo.
 echo.              1. Validate your WoW.exe is the right version
 echo.              2. Write a new realmlist.wtf
@@ -39,7 +40,32 @@ echo.
 echo.        
 echo.          Press any key to get started...
 pause >NUL
-:realmMenu
+:serverMenu
+cls
+echo.
+echo.
+echo.                      Vanilla WoW Configurator
+echo.                      ------------------------
+echo.
+echo.           Select the server you want to play on: 
+echo.
+echo.                      1. Elysium Project
+echo.                      2. Light's Hope
+echo.
+echo.
+echo.
+set /p server=".%BS%          Enter realm number (1-2): "
+if not "%server%" == "1" if not "%server%" == "2"  goto serverMenu
+
+if "%server%" == "1" (
+    set serverName=elysium-project.org
+    goto realmMenuElysium
+)
+if "%server%" == "2" (
+    set serverName=lightshope.org
+    goto realmMenuLightsHope
+)
+:realmMenuElysium
 cls
 echo.
 echo.
@@ -50,15 +76,43 @@ echo.           Select the Realm you want to play on. If you haven't
 echo.           created a character yet, any realm will do. You can 
 echo.           switch once logged in.
 echo.
-echo.                      1. Anathema (PvP^)
+echo.                      1. Nighthaven (PvP^)
+echo.                      2. Stratholme
+echo.
+echo.
+echo.
+set /p realm=".%BS%          Enter realm number (1-2): "
+if not "%realm%" == "1" if not "%realm%" == "2" goto realmMenu
+
+if "%realm%" == "1" (
+    set realmName=Nighthaven
+    goto configStart
+)
+if "%realm%" == "2" (
+    set realmNAme=Stratholme
+    goto configStart
+)
+rem If we end up here, something's gone wrong. 
+goto mainScreen
+:realmMenuLightsHope
+cls
+echo.
+echo.
+echo.                     Light's Hope Configurator
+echo.                     -------------------------        
+echo.
+echo.           Select the Realm you want to play on. If you haven't 
+echo.           created a character yet, any realm will do. You can 
+echo.           switch once logged in.
+echo.
+echo.                      1. Anathema (PvE^)
 echo.                      2. Darrowshire (PvE^)
-echo.                      3. Elysium (PvP^)
-echo.                      4. Zeth'Kur (PvP^)
+echo.                      3. Lightbringer (PvP^)
 echo.
 echo.
 echo.
-set /p realm=".%BS%          Enter realm number (1-4): "
-if not "%realm%" == "1" if not "%realm%" == "2" if not "%realm%" == "3" if not "%realm%" == "4" goto realmMenu
+set /p realm=".%BS%          Enter realm number (1-3): "
+if not "%realm%" == "1" if not "%realm%" == "2" if not "%realm%" == "3" goto realmMenu
 
 if "%realm%" == "1" (
     set realmName=Anathema
@@ -69,18 +123,13 @@ if "%realm%" == "2" (
     goto configStart
 )
 if "%realm%" == "3" (
-    set realmNAme=Elysium
+    set realmNAme=Lightbringer
     goto configStart
 ) 
-if "%realm%" == "4" (
-    SET realmName=Zeth'Kur
-)
+
 :configStart
-
-
 echo.
 echo.
-
 rem 
 rem Check if WoW.exe is valid
 rem
@@ -100,9 +149,8 @@ echo.
 echo.  --------- STEP 2 - Writing realmlist.wtf ------------------------------
 echo.
 echo. 
-echo.       Adding 'set realmlist logon.elysium-project.org' to realmlist.wtf
-echo # Elysium Project classic WoW server> realmlist.wtf
-echo set realmlist logon.elysium-project.org >> realmlist.wtf
+echo.       Adding 'set realmlist logon.%serverName%' to realmlist.wtf
+echo set realmlist logon.%serverName% > realmlist.wtf
 echo.
 echo.  --------- STEP 3 - Writing config.wtf ---------------------------------
 echo.
@@ -129,8 +177,8 @@ if exist "config.wtf" (
     echo not found. We'll create an empty one from scratch.
 )
 echo. 
-echo.       Adding 'SET realmList "logon.elysium-project.org"' to config.wtf
-echo SET realmList "logon.elysium-project.org" >> config.wtf
+echo.       Adding 'SET realmList "logon.%serverName%"' to config.wtf
+echo SET realmList "logon.%serverName%" >> config.wtf
 echo.       Adding 'SET realmName "%realmName%"' to config.wtf
 echo SET realmName "%realmName%" >> config.wtf
 echo.
@@ -195,7 +243,7 @@ echo.
 
 echo.
 set YN=
-set /p YN="       Do you want a shortcut to Elysium Project WoW on your desktop? (Y/N) "
+set /p YN="       Do you want a shortcut to World or Warcraft on your desktop? (Y/N) "
 if /i "%YN%" == "Y" (
     call :createShortcut
 )
@@ -211,9 +259,8 @@ echo.       files. This routine will check the MD5 hashes of the game data
 echo.       files against known good versions to validate that your install
 echo.       should work. 
 echo.
-echo.       Any incorrect hashes will be highlighted for you. If there are any
-echo.       download the game again from the links on the Elysium Project 
-echo.       homepage.
+echo.       Any incorrect hashes will be highlighted for you. If there are any,
+echo.       download the game again.
 echo.
 
 set YN=
@@ -242,11 +289,7 @@ rem ----------------------------------------------------------------------------
     echo.        This doesn't look like the correct WoW.exe. 
     echo.
     echo.        Check that the script is running in the correct directory. 
-    echo.        If you think it is, re-download the client from the Elysium
-    echo.        Project at:
-	echo.   
-	echo.              https://elysium-project.org/play
-    echo.
+    echo.        If you think it is, re-download the game client.
 	echo.
 	echo.        Press any key to close window.
 	pause >NUL
@@ -272,7 +315,7 @@ rem ----------------------------------------------------------------------------
     rem
     rem Creates a shortcut to WoW on the user's desktop
     rem
-    powershell -command "$Shell = New-Object -ComObject WScript.Shell;$ShortCut = $Shell.CreateShortcut($env:USERPROFILE + '\Desktop\Elysium Project WoW.lnk');$Shortcut.TargetPath = \"$pwd\WoW.exe\";$Shortcut.Save()"
+    powershell -command "$Shell = New-Object -ComObject WScript.Shell;$ShortCut = $Shell.CreateShortcut($env:USERPROFILE + '\Desktop\Vanilla WoW.lnk');$Shortcut.TargetPath = \"$pwd\WoW.exe\";$Shortcut.Save()"
     exit /b
 
 :checkFiles

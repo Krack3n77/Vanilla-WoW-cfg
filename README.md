@@ -1,4 +1,9 @@
-# Elysium Project WoW Configuration Script
+# Vanilla WoW Configuration Script
+
+Configuration script for use with:
+
+- The Elysium Project
+- Light's Hope
 
 ## What does it do?
 The script does the following:
@@ -12,13 +17,15 @@ The script does the following:
 * Checks the MD5 hashes of game data files (Optional)
 
 ## How do I use it?
-1. Download the ZIP file from the repository [Releases page](https://github.com/fulzamoth/Elysium-WoW-cfg/releases) (link at top of post).
+1. Download the ZIP file from the repository Releases page (link at top of post).
 2. Extract the ZIP file.
-3. Copy the extracted *Elysium-WoW-cfg.cmd* file to your Vanilla World of Warcraft directory.
-4. In your World of Warcraft directory, double click *Elysium-WoW-cfg.cmd* to run the script.
+3. Copy the extracted *Vanilla-WoW-cfg.cmd* file to your Vanilla World of Warcraft directory.
+4. In your World of Warcraft directory, double click *Vanilla-WoW-cfg.cmd* to run the script.
 
 The script will prompt you:
+* for the server you're going to play on
 * for which realm you want configured
+* for permission to delete registry key that enables compatability mode (say Yes to this)
 * whether you want unnecessary executables disabled (to avoid firing up retail only EXEs by accident)
 * to setup a shortcut to Elysium Project WoW on your desktop
 * whether to run MD5 hash checks
